@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         EC2_USER = "ubuntu"
-        EC2_HOST = "65.0.185.253"
+        EC2_HOST = "65.2.188.193"
         APP_DIR = "/home/ubuntu/app"   // CHANGE THIS if needed
         SERVICE_NAME = "spring-app"
         REPO_URL = "https://github.com/Geetha-R-27/jspgram-spring-cicd-main.git"
