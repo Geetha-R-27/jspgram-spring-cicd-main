@@ -9,12 +9,10 @@ pipeline {
         SERVICE_NAME = "spring-app"
         REPO_URL = "https://github.com/Geetha-R-27/jspgram-spring-cicd-main.git"
     }
-
-    stages {
-
-      tools{
+ tools{
         maven 'maven'
       }
+    stages {
 
         stage('Build Spring Boot App') {
             steps {
