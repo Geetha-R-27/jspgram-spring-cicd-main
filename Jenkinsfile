@@ -34,22 +34,26 @@ pipeline {
         }
 
         stage('Copy JAR To EC2') {
-            steps {
-                echo "Copying JAR to EC2 Server..."
-                sh """
-                    scp -o StrictHostKeyChecking=no -i ${SSH_KEY} ${JAR_NAME} ${EC2_USER}@${EC2_HOST}:${APP_DIR}/app.jar
-                """
-            }
+    steps {
+        echo "Copying JAR to EC2 Server..."
+        sshagent(['ec2-key']) {
+            sh """
+                scp -o StrictHostKeyChecking=no ${JAR_NAME} ${EC2_USER}@${EC2_HOST}:${APP_DIR}/app.jar
+            """
         }
+    }
+}
 
-        stage('Restart Application Service') {
-            steps {
-                echo "Restarting systemd service on EC2..."
-                sh """
-                    ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ${EC2_USER}@${EC2_HOST} 'sudo systemctl restart ${SERVICE_NAME}'
-                """
-            }
+stage('Restart Application Service') {
+    steps {
+        echo "Restarting Application..."
+        sshagent(['ec2-key']) {
+            sh """
+                ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'sudo systemctl restart ${SERVICE_NAME}'
+            """
         }
+    }
+}
 
         stage('Verify App Status') {
             steps {
