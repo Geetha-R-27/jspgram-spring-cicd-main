@@ -3,17 +3,20 @@ pipeline {
 
     environment {
         EC2_USER = "ubuntu"
-        EC2_HOST = "13.126.99.162"   // <-- CHANGE THIS
+        EC2_HOST = "65.0.185.253"   // PUBLIC IP IS REQUIRED (unless using private network)
         SSH_KEY = "~/.ssh/id_rsa"
         APP_DIR = "/home/jenkins/app"
         SERVICE_NAME = "spring-app"
         REPO_URL = "https://github.com/Geetha-R-27/jspgram-spring-cicd-main.git"
     }
- tools{
+
+    tools {
         maven 'maven'
-      }
+    }
+
     stages {
 
+        
         stage('Build Spring Boot App') {
             steps {
                 echo "Running maven package..."
@@ -30,7 +33,7 @@ pipeline {
             }
         }
 
-        stage('Copy Jar To EC2') {
+        stage('Copy JAR To EC2') {
             steps {
                 echo "Copying JAR to EC2 Server..."
                 sh """
