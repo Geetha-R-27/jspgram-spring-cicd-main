@@ -3,9 +3,8 @@ pipeline {
 
     environment {
         EC2_USER = "ubuntu"
-        EC2_HOST = "65.0.185.253"   // PUBLIC IP IS REQUIRED (unless using private network)
-        SSH_KEY = "~/.ssh/id_rsa"
-        APP_DIR = "/home/jenkins/app"
+        EC2_HOST = "65.0.185.253"
+        APP_DIR = "/home/ubuntu/app"   // CHANGE THIS if needed
         SERVICE_NAME = "spring-app"
         REPO_URL = "https://github.com/Geetha-R-27/jspgram-spring-cicd-main.git"
     }
@@ -16,7 +15,12 @@ pipeline {
 
     stages {
 
-        
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: "${REPO_URL}"
+            }
+        }
+
         stage('Build Spring Boot App') {
             steps {
                 echo "Running maven package..."
@@ -34,32 +38,28 @@ pipeline {
         }
 
         stage('Copy JAR To EC2') {
-    steps {
-        echo "Copying JAR to EC2 Server..."
-        sshagent(['ec2-key']) {
-            sh """
-                scp -o StrictHostKeyChecking=no ${JAR_NAME} ${EC2_USER}@${EC2_HOST}:${APP_DIR}/app.jar
-            """
+            steps {
+                echo "Copying JAR to EC2 Server..."
+                sshagent(['ec2-key']) {
+                    sh "scp -o StrictHostKeyChecking=no ${JAR_NAME} ${EC2_USER}@${EC2_HOST}:${APP_DIR}/app.jar"
+                }
+            }
         }
-    }
-}
 
-stage('Restart Application Service') {
-    steps {
-        echo "Restarting Application..."
-        sshagent(['ec2-key']) {
-            sh """
-                ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'sudo systemctl restart ${SERVICE_NAME}'
-            """
+        stage('Restart Application Service') {
+            steps {
+                echo "Restarting Application..."
+                sshagent(['ec2-key']) {
+                    sh "ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'sudo systemctl restart ${SERVICE_NAME}'"
+                }
+            }
         }
-    }
-}
 
         stage('Verify App Status') {
             steps {
-                sh """
-                    ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ${EC2_USER}@${EC2_HOST} 'sudo systemctl status ${SERVICE_NAME} --no-pager'
-                """
+                sshagent(['ec2-key']) {
+                    sh "ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'sudo systemctl status ${SERVICE_NAME} --no-pager'"
+                }
             }
         }
     }
