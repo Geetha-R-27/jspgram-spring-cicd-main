@@ -31,7 +31,8 @@ pipeline {
         stage('Find JAR Name') {
             steps {
                 script {
-                    JAR_NAME = sh(script: "ls target/*.jar | head -n 1", returnStdout: true).trim()
+                   def JAR_NAME = sh(script: "ls target/*.jar | head -n 1", returnStdout: true).trim()
+                    env.JAR_NAME = JAR_NAME
                     echo "Generated JAR: ${JAR_NAME}"
                 }
             }
